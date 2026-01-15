@@ -95,6 +95,14 @@ print(cnf)
 # continue to do this until all until all unit clauses are removed (new ones may be made by removing negations)
 # if contradiction is found at this stage, then unsat as no branching can fix it (i think?)
 
+
+def negation(truth):
+    #removes - if already negated, adds - if not already negated
+    if truth[0] == "-":
+        return truth[1:]
+    else:
+        return "-" + truth
+
 def removeUnitClauses(cnf, trues):
     #removes all unit clauses which have been found true so far
     newCnf = []
@@ -113,10 +121,11 @@ def removeUnitNegations(cnf, trues):
     newCnf = []
     for clause in cnf:
         newClause = clause.copy()
-        for t in trues:
-            neg = "-" + t
-            if neg in newClause:
-                newClause.remove(neg)
+        for truth in trues:
+            if negation(truth) in newClause:
+                newClause.remove(negation(truth))
+        if len(newClause) == 0:
+            return False
         newCnf.append(newClause)
     return newCnf
 
@@ -133,7 +142,7 @@ def unitPropagation(cnf, trues):
         foundUnit = False
         for x in range(len(cnf)):
             if len(cnf[x]) == 1:
-                if ("-" + cnf[x][0]) in trues:
+                if (negation(cnf[x][0])) in trues:
                     return False
                 elif cnf[x][0] not in trues:
                     trues.append(cnf[x][0])
@@ -141,22 +150,33 @@ def unitPropagation(cnf, trues):
         #updates cnf, before trying to find unit clauses more after removal of negations
         cnf = removeUnitClauses(cnf, trues)
         cnf = removeUnitNegations(cnf, trues)
+        if cnf is False:
+            return False
     return cnf
 
 trues = []
-cnf = unitPropagation(cnf, trues)
+result = unitPropagation(cnf, trues)
 print(trues)
-if not cnf:
+if result is False:
     print("UNSAT")
-else:
+elif len(result) == 0:
+    print("SAT")
+    cnf = result
     print(cnf)
+else:
+    #at this point, dpll would kick in, and recurse
+    print("after unit propagation remaining cnf: ")
+    cnf = result
+    print(cnf)
+    
+    
 
 
 #NEXT STEPS:
-#ADD NEGATE HELPER, BECAUSE ADDING - INFRONT WONT WORK FOR DOUBLE NEGATIONS
-#REMOVEUNITNEGATIONS SHOULD DETECT EMPTY CLAUSES, AND RETURN FALSE FOR UNSAT
-#FIX UNIT PROPAGATION TO HABDLE POSSIBLE FALSE
-#FIX FINAL SAT/UNSAT PRINT LOGIC I.E. RETURNING FALSE/TRUE FROM FUNCTIONS
+#ADD NEGATE HELPER, BECAUSE ADDING - INFRONT WONT WORK FOR DOUBLE NEGATIONS, done
+#REMOVEUNITNEGATIONS SHOULD DETECT EMPTY CLAUSES, AND RETURN FALSE FOR UNSAT, done
+#FIX UNIT PROPAGATION TO HABDLE POSSIBLE FALSE, done?
+#FIX FINAL SAT/UNSAT PRINT LOGIC I.E. RETURNING FALSE/TRUE FROM FUNCTIONS, done
 
 
 

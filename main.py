@@ -54,37 +54,105 @@ cnf = parseCNF(input)
 
 print(cnf)
 
-def simplify(cnf, trues):
-    #unit propagation (clauses with exactly 1 proposition must be true)
-    #loop through cnf array of arrays (clauses), seeing if any clauses have only 1 proposition 
-    for x in range(len(cnf)):
-        if len(cnf[x]) == 1:
-            #if trues already contains inverse of this clause then return contradiction
-            if ((cnf[x][0]) * -1) in trues:
-                return False
-            else:
-                trues.append((cnf[x][0]))
-                #deals with new truth assignment
-                for y in range(len(cnf)):
-                    #if clause is depedent, make it empty
-                    if cnf[x][0] in cnf[y]:
-                        cnf[y] = []
-                    #if clause has inverse, remove the inverse, leaving only other propositions in that clause
-    #remove all empty clauses
-    for x in range(len(cnf)):
-        if cnf[len(cnf) - x - 1] == []:
-            cnf.pop(len(cnf) - x - 1)
-    return True
+##not working unit propagation attempt 1.
+# def simplify(cnf, trues):
+#     #unit propagation (clauses with exactly 1 proposition must be true)
+#     #loop through cnf array of arrays (clauses), seeing if any clauses have only 1 proposition 
+#     for x in range(len(cnf)):
+#         if len(cnf[x]) == 1:
+#             #if trues already contains inverse of this clause then return contradiction
+#             if ((cnf[x][0]) * -1) in trues:
+#                 return False
+#             else:
+#                 trues.append((cnf[x][0]))
+#                 #deals with new truth assignment
+#                 for y in range(len(cnf)):
+#                     #if clause is depedent, make it empty
+#                     if cnf[x][0] in cnf[y]:
+#                         cnf[y] = []
+#                     #if clause has inverse, remove the inverse, leaving only other propositions in that clause
+#     #remove all empty clauses
+#     for x in range(len(cnf)):
+#         if cnf[len(cnf) - x - 1] == []:
+#             cnf.pop(len(cnf) - x - 1)
+#     return True
 
-def DPLL(cnf):
-    trues = []
-    if simplify(cnf, trues):
-        print(cnf)
-        print(trues)
-    else:
-        print("unsat")
-        print(cnf)
-        print(trues)
+# def DPLL(cnf):
+#     trues = []
+#     if simplify(cnf, trues):
+#         print(cnf)
+#         print(trues)
+#     else:
+#         print("unsat")
+#         print(cnf)
+#         print(trues)
 
-DPLL(cnf)
+# DPLL(cnf)
+
+# plan for future: loop through list, finding all unit clauses, add to truth,
+# check if negation already in truth, if so return contradiction
+# remove all unti clauses, clauses dependent on the content of them and remove remove negations from other clauses
+# continue to do this until all until all unit clauses are removed (new ones may be made by removing negations)
+# if contradiction is found at this stage, then unsat as no branching can fix it (i think?)
+
+def removeUnitClauses(cnf, trues):
+    #removes all unit clauses which have been found true so far
+    newCnf = []
+    for clause in cnf:
+        clauseTrue = False
+        for prop in clause:
+            if prop in trues:
+                clauseTrue = True
+                break
+        if not clauseTrue:
+            newCnf.append(clause)
+    return newCnf
+
+def removeUnitNegations(cnf, trues):
+    #removes the negations of all true propositions in clauses
+    newCnf = []
+    for clause in cnf:
+        newClause = clause.copy()
+        for t in trues:
+            neg = "-" + t
+            if neg in newClause:
+                newClause.remove(neg)
+        newCnf.append(newClause)
+    return newCnf
+
+
+
+def unitPropagation(cnf, trues):
+    #unit propagation -> process of setting all unit clauses (clauses with only 1 proposition) to true
+    #if it is found that both a proposition and its negated form are present, it is UNSAT (returns false)
+    #when a unit clause is set to true, all clauses the unit appears in are removed from the cnf
+    #all negated units are removed from clauses
+    #new unit clauses may be made by this last step, so the process needs to be repeated a number of times
+    foundUnit = True 
+    while foundUnit:
+        foundUnit = False
+        for x in range(len(cnf)):
+            if len(cnf[x]) == 1:
+                if ("-" + cnf[x][0]) in trues:
+                    return False
+                elif cnf[x][0] not in trues:
+                    trues.append(cnf[x][0])
+                    foundUnit = True
+        #updates cnf, before trying to find unit clauses more after removal of negations
+        cnf = removeUnitClauses(cnf, trues)
+        cnf = removeUnitNegations(cnf, trues)
+    return cnf
+
+trues = []
+cnf = unitPropagation(cnf, trues)
+print(trues)
+if not cnf:
+    print("UNSAT")
+else:
+    print(cnf)
+
+
+
+
+
     

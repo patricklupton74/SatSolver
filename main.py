@@ -154,24 +154,62 @@ def unitPropagation(cnf, trues):
             return False
     return cnf
 
+def pureLiteralElimination(cnf, trues):
+    positives = set()
+    negatives = set()
+    #adds all positive clauses to postive set and all negative clauses to negative set
+    for clause in cnf:
+        for literal in clause:
+            if literal[0] == "-":
+                negatives.add(literal[1:])
+            else:
+                positives.add(literal[0])
+    #creates sets of literals which only appear positive/negative
+    purePositives = positives - negatives
+    pureNegatives = negatives - positives
+    #compiles into pure literal set (to be removed from cnf)
+    pureLiterals = []
+    for x in purePositives:
+        pureLiterals.append(x)
+    for x in pureNegatives:
+        pureLiterals.append("-" + x)
+    if not pureLiterals:
+        return cnf
+    #add pure literals to trues
+    trues.extend(pureLiterals)
+    #remove true literals from cnf (if any literal in a clause is pure, the clause is removed from the cnf)
+    newCnf = []
+    for clause in cnf:
+        clauseSat = False
+        for literal in clause:
+            if literal in pureLiterals:
+                clauseSat = True
+                break
+        if not clauseSat:
+            newCnf.append(clause)
+    return newCnf
+    
+
+
+        
+
 trues = []
 result = unitPropagation(cnf, trues)
-print(trues)
+#print(trues)
+
 if result is False:
     print("UNSAT")
-elif len(result) == 0:
-    print("SAT")
-    cnf = result
-    print(cnf)
 else:
-    #at this point, dpll would kick in, and recurse
-    print("after unit propagation remaining cnf: ")
-    cnf = result
-    print(cnf)
+    result = pureLiteralElimination(result, trues)    
+    print("assignments:", trues)
+    if len(result) == 0:
+        print("SAT")
+        print("final CNF:", result)
+    else:
+        #dpll & recurse
+        print("after unit propagation and pure literal elimination, remaining CNF:")
+        print(result)
     
-    
-
-
 #NEXT STEPS:
 #ADD NEGATE HELPER, BECAUSE ADDING - INFRONT WONT WORK FOR DOUBLE NEGATIONS, done
 #REMOVEUNITNEGATIONS SHOULD DETECT EMPTY CLAUSES, AND RETURN FALSE FOR UNSAT, done

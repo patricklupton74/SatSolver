@@ -190,15 +190,18 @@ def pureLiteralElimination(cnf, trues):
     return newCnf
     
 def chooseVariable(cnf):
-    """Pick a variable to branch on - choose from shortest clause"""
-    if cnf and cnf[0]:
-        shortestClause = min(cnf, key=len)
-        literal = shortestClause[0]
-        # Return variable without negation sign
-        if literal[0] == '-':
-            return literal[1:]
-        return literal
-    return None
+    #empty cnf
+    if len(cnf) == 0:
+        return None
+    #empty first clause
+    if len(cnf[0]) == 0:
+        return None
+    #find shortest clause and return its first literal (w/ no sign)
+    shortestClause = min(cnf, key=len)
+    literal = shortestClause[0]
+    if literal[0] == "-":
+        return literal[1:]
+    return literal
 
 def DPLL(cnf, trues):
     #unit propagation

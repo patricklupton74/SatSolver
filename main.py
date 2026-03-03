@@ -163,7 +163,7 @@ def pureLiteralElimination(cnf, trues):
             if literal[0] == "-":
                 negatives.add(literal[1:])
             else:
-                positives.add(literal[0])
+                positives.add(literal)
     #creates sets of literals which only appear positive/negative
     purePositives = positives - negatives
     pureNegatives = negatives - positives
@@ -189,26 +189,45 @@ def pureLiteralElimination(cnf, trues):
             newCnf.append(clause)
     return newCnf
     
+def chooseVariable(cnf):
+    """Pick a variable to branch on - choose from shortest clause"""
+    if cnf and cnf[0]:
+        shortestClause = min(cnf, key=len)
+        literal = shortestClause[0]
+        # Return variable without negation sign
+        if literal[0] == '-':
+            return literal[1:]
+        return literal
+    return None
 
+def DPLL(cnf, trues):
+    #unit propagation
+    cnf = unitPropagation(cnf, trues)
+    if cnf is False:
+        return False
+    #pure lit elim
+    cnf = pureLiteralElimination(cnf, trues)
+    #check if solved
+    if len(cnf) == 0:
+        return True
+    #choose variable to branch on
+
+    #try var = true
+
+    #backtrack, try var = false
+
+    #both branches failed i.e. unsat
+    return False
 
         
-
 trues = []
-result = unitPropagation(cnf, trues)
-#print(trues)
+result = DPLL(cnf, trues)
 
-if result is False:
-    print("UNSAT")
+if result:
+    print("SAT")
+    print("Satisfying assignment:", trues)
 else:
-    result = pureLiteralElimination(result, trues)    
-    print("assignments:", trues)
-    if len(result) == 0:
-        print("SAT")
-        print("final CNF:", result)
-    else:
-        #dpll & recurse
-        print("after unit propagation and pure literal elimination, remaining CNF:")
-        print(result)
+    print("UNSAT")
     
 #NEXT STEPS:
 #ADD NEGATE HELPER, BECAUSE ADDING - INFRONT WONT WORK FOR DOUBLE NEGATIONS, done

@@ -44,7 +44,6 @@ def parseCNF(input):
     return cnf
 
 input = str(input("enter a CNF. "))
-
 #parse input, split into array of arrays representing a CNF and its disjunctive clauses
 cnf = parseCNF(input)
 
@@ -159,7 +158,7 @@ def pureLiteralElimination(cnf, trues):
             if literal[0] == "-":
                 negatives.add(literal[1:])
             else:
-                positives.add(literal)
+                positives.add(literal[0])
     #creates sets of literals which only appear positive/negative
     purePositives = positives - negatives
     pureNegatives = negatives - positives

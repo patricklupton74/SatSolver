@@ -1,5 +1,3 @@
-####################### (↓) INPUT PARSING & SANITATION #######################
-
 def lettersToNumbers(cnf):
     #loops through cnf array of arrays
     for x in range(len(cnf)):
@@ -44,8 +42,6 @@ def parseCNF(input):
     #turns letters to numbers e.g. A -> 1, B -> 2. '¬' is represented by -, e.g. ¬C -> -3
     lettersToNumbers(cnf)  
     return cnf
-
-####################### (↑) INPUT PARSING & SANITATION #######################
 
 input = str(input("enter a CNF. "))
 
@@ -214,11 +210,33 @@ def DPLL(cnf, trues):
     if len(cnf) == 0:
         return True
     #choose variable to branch on
-
+    variable = chooseVariable(cnf)
+    if variable is None:
+        return False
     #try var = true
-
-    #backtrack, try var = false
-
+    truesCopy = trues.copy()
+    truesCopy.append(variable)
+    cnfCopy = removeUnitClauses(cnf, [variable])
+    if cnfCopy is not False:
+        cnfCopy = removeUnitNegations(cnfCopy, [variable])
+    if cnfCopy is not False:
+        if DPLL(cnfCopy, truesCopy):
+            #success
+            trues.clear()
+            trues.extend(truesCopy)
+            return True
+    #failure - backtrack, try var = false
+    truesCopy = trues.copy()
+    truesCopy.append(negation(variable))
+    cnfCopy = removeUnitClauses(cnf, [negation(variable)])
+    if cnfCopy is not False:
+        cnfCopy = removeUnitNegations(cnfCopy, [negation(variable)])
+    if cnfCopy is not False:
+        if DPLL(cnfCopy, truesCopy):
+            #success
+            trues.clear()
+            trues.extend(truesCopy)
+            return True
     #both branches failed i.e. unsat
     return False
 
@@ -231,15 +249,3 @@ if result:
     print("Satisfying assignment:", trues)
 else:
     print("UNSAT")
-    
-#NEXT STEPS:
-#ADD NEGATE HELPER, BECAUSE ADDING - INFRONT WONT WORK FOR DOUBLE NEGATIONS, done
-#REMOVEUNITNEGATIONS SHOULD DETECT EMPTY CLAUSES, AND RETURN FALSE FOR UNSAT, done
-#FIX UNIT PROPAGATION TO HABDLE POSSIBLE FALSE, done?
-#FIX FINAL SAT/UNSAT PRINT LOGIC I.E. RETURNING FALSE/TRUE FROM FUNCTIONS, done
-
-
-
-
-
-    

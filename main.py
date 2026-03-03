@@ -200,6 +200,8 @@ def chooseVariable(cnf):
     return literal
 
 def DPLL(cnf, trues):
+    global recursions
+    recursions += 1
     #unit propagation
     cnf = unitPropagation(cnf, trues)
     if cnf is False:
@@ -240,7 +242,7 @@ def DPLL(cnf, trues):
     #both branches failed i.e. unsat
     return False
 
-        
+recursions = 0
 trues = []
 result = DPLL(cnf, trues)
 
@@ -249,3 +251,4 @@ if result:
     print("Satisfying assignment:", trues)
 else:
     print("UNSAT")
+print(f"Number of recursions: {recursions}")
